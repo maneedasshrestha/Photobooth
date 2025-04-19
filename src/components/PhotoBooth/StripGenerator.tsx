@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { usePhotoBooth } from "../../context/PhotoBoothContext";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Home } from "lucide-react";
@@ -17,6 +16,8 @@ const StripGenerator: React.FC = () => {
   
   const [orientation, setOrientation] = useState<"vertical" | "horizontal">("vertical");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [isPrinting, setIsPrinting] = useState<boolean>(false);
+  const stripRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     generateStrip();
@@ -29,11 +30,17 @@ const StripGenerator: React.FC = () => {
     try {
       const strip = await generatePhotoStrip(photos, orientation === "vertical");
       setStripGenerated(strip);
+      simulatePrinting();
     } catch (error) {
       console.error("Error generating strip:", error);
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const simulatePrinting = () => {
+    setIsPrinting(true);
+    setTimeout(() => setIsPrinting(false), 2000);
   };
 
   const getFilename = () => {
@@ -69,7 +76,18 @@ const StripGenerator: React.FC = () => {
           </div>
         ) : stripGenerated ? (
           <div className="flex flex-col items-center max-w-full overflow-hidden">
-            <div className="photobooth-strip mb-6 max-w-full">
+            <div 
+              ref={stripRef}
+              className={`photobooth-strip mb-6 max-w-full transition-transform duration-1000 ${
+                isPrinting ? 'translate-y-0' : '-translate-y-full opacity-0'
+              }`}
+              style={{
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                transform: isPrinting ? 'translateY(0)' : 'translateY(-100%)',
+                opacity: isPrinting ? '1' : '0',
+                transition: 'transform 2s ease-out, opacity 0.5s ease-in'
+              }}
+            >
               <img 
                 src={stripGenerated} 
                 alt="Generated PhotoBooth Strip" 

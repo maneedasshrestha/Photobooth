@@ -1,4 +1,3 @@
-
 // Function to convert a base64 image to a blob
 export const dataURLtoBlob = (dataURL: string): Blob => {
   const arr = dataURL.split(',');
@@ -24,69 +23,116 @@ export const downloadImage = (dataURL: string, filename: string = "photobooth-st
   document.body.removeChild(link);
 };
 
+// Function to apply vintage effect to an image
+const applyVintageTint = async (dataUrl: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      
+      // Draw original image
+      ctx.drawImage(img, 0, 0);
+      
+      // Apply vintage tint overlay
+      ctx.fillStyle = 'rgba(255, 222, 173, 0.3)'; // Warm vintage tint
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Add slight vignette effect
+      const gradient = ctx.createRadialGradient(
+        canvas.width / 2,
+        canvas.height / 2,
+        canvas.height * 0.3,
+        canvas.width / 2,
+        canvas.height / 2,
+        canvas.height * 0.7
+      );
+      gradient.addColorStop(0, 'rgba(0,0,0,0)');
+      gradient.addColorStop(1, 'rgba(0,0,0,0.3)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.src = dataUrl;
+  });
+};
+
 // Function to generate a photo strip from multiple images
 export const generatePhotoStrip = async (photos: string[], vertical: boolean = true): Promise<string> => {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
+  return new Promise(async (resolve) => {
     const loadedImages: HTMLImageElement[] = [];
+    const processedPhotos: string[] = [];
     let loadedCount = 0;
     
-    // Create Image elements for each photo
-    photos.forEach((photoSrc, index) => {
+    // First, apply vintage effect to all photos
+    for (const photoSrc of photos) {
+      const vintagePhoto = await applyVintageTint(photoSrc);
+      processedPhotos.push(vintagePhoto);
+    }
+    
+    // Then load all processed photos
+    processedPhotos.forEach((photoSrc, index) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
         loadedImages[index] = img;
         loadedCount++;
         
-        // Once all images are loaded, render the strip
         if (loadedCount === photos.length) {
           const photoWidth = loadedImages[0].width;
           const photoHeight = loadedImages[0].height;
+          const spacing = 40; // Increased spacing between photos
+          const borderWidth = 30; // White border width
+          
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d')!;
           
           if (vertical) {
-            // Vertical strip layout
-            canvas.width = photoWidth;
-            canvas.height = photoHeight * photos.length + (photos.length - 1) * 10; // Add spacing
+            canvas.width = photoWidth + (borderWidth * 2);
+            canvas.height = (photoHeight * photos.length) + (spacing * (photos.length - 1)) + (borderWidth * 2);
+            
+            // Fill white background (acts as border)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             loadedImages.forEach((img, i) => {
-              ctx.drawImage(img, 0, i * (photoHeight + 10), photoWidth, photoHeight);
-              // Add a small separator line except for the last image
-              if (i < photos.length - 1) {
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(0, (i + 1) * photoHeight + i * 10 + 4);
-                ctx.lineTo(photoWidth, (i + 1) * photoHeight + i * 10 + 4);
-                ctx.stroke();
-              }
+              // Draw each photo with proper spacing
+              ctx.drawImage(
+                img,
+                borderWidth,
+                borderWidth + (i * (photoHeight + spacing)),
+                photoWidth,
+                photoHeight
+              );
             });
           } else {
-            // Horizontal strip layout
-            canvas.width = photoWidth * photos.length + (photos.length - 1) * 10; // Add spacing
-            canvas.height = photoHeight;
+            canvas.width = (photoWidth * photos.length) + (spacing * (photos.length - 1)) + (borderWidth * 2);
+            canvas.height = photoHeight + (borderWidth * 2);
+            
+            // Fill white background (acts as border)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             loadedImages.forEach((img, i) => {
-              ctx.drawImage(img, i * (photoWidth + 10), 0, photoWidth, photoHeight);
-              // Add a small separator line except for the last image
-              if (i < photos.length - 1) {
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo((i + 1) * photoWidth + i * 10 + 4, 0);
-                ctx.lineTo((i + 1) * photoWidth + i * 10 + 4, photoHeight);
-                ctx.stroke();
-              }
+              ctx.drawImage(
+                img,
+                borderWidth + (i * (photoWidth + spacing)),
+                borderWidth,
+                photoWidth,
+                photoHeight
+              );
             });
           }
           
-          // Add decorative frame
-          ctx.strokeStyle = '#8B5CF6'; // Using our primary photobooth color
-          ctx.lineWidth = 15;
-          ctx.strokeRect(0, 0, canvas.width, canvas.height);
+          // Add subtle shadow effect
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+          ctx.shadowBlur = 15;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
           
-          // Convert canvas to data URL and resolve
           resolve(canvas.toDataURL('image/png'));
         }
       };
