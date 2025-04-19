@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from "react";
 import { usePhotoBooth } from "../../context/PhotoBoothContext";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ const StripGenerator: React.FC = () => {
   const [orientation, setOrientation] = useState<"vertical" | "horizontal">("vertical");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
+  const [hasAnimationCompleted, setHasAnimationCompleted] = useState<boolean>(false);
   const stripRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,6 +29,8 @@ const StripGenerator: React.FC = () => {
     if (photos.length === 0) return;
     
     setIsGenerating(true);
+    setHasAnimationCompleted(false);
+    
     try {
       const strip = await generatePhotoStrip(photos, orientation === "vertical");
       setTimeout(() => {
@@ -42,7 +46,10 @@ const StripGenerator: React.FC = () => {
 
   const simulatePrinting = () => {
     setIsPrinting(true);
-    setTimeout(() => setIsPrinting(false), 2000);
+    setTimeout(() => {
+      setIsPrinting(false);
+      setHasAnimationCompleted(true);
+    }, 2000);
   };
 
   const getFilename = () => {
@@ -80,8 +87,8 @@ const StripGenerator: React.FC = () => {
           <div className="flex flex-col items-center max-w-full overflow-hidden">
             <div 
               ref={stripRef}
-              className={`photobooth-strip printing-sound ${
-                isPrinting ? '' : 'opacity-0 translate-y-[-100%]'
+              className={`photobooth-strip ${isPrinting ? 'printing-sound animate-print-strip' : ''} ${
+                !isPrinting && !hasAnimationCompleted ? 'opacity-0 translate-y-[-100%]' : ''
               }`}
             >
               <img 
@@ -91,7 +98,7 @@ const StripGenerator: React.FC = () => {
               />
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 mt-6">
               <DownloadButton 
                 imageData={stripGenerated}
                 filename={getFilename()}

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -143,8 +144,11 @@
 
   .photobooth-strip {
     @apply bg-white p-4 rounded-lg shadow-lg max-w-full w-[300px] mx-auto relative;
-    animation: print-strip 2s cubic-bezier(0.23, 1, 0.32, 1);
     transform-origin: top center;
+  }
+
+  .animate-print-strip {
+    animation: print-strip 2s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .photobooth-frame {
