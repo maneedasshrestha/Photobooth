@@ -29,8 +29,10 @@ const StripGenerator: React.FC = () => {
     setIsGenerating(true);
     try {
       const strip = await generatePhotoStrip(photos, orientation === "vertical");
-      setStripGenerated(strip);
-      simulatePrinting();
+      setTimeout(() => {
+        setStripGenerated(strip);
+        simulatePrinting();
+      }, 1000);
     } catch (error) {
       console.error("Error generating strip:", error);
     } finally {
@@ -78,15 +80,9 @@ const StripGenerator: React.FC = () => {
           <div className="flex flex-col items-center max-w-full overflow-hidden">
             <div 
               ref={stripRef}
-              className={`photobooth-strip mb-6 max-w-full transition-transform duration-1000 ${
-                isPrinting ? 'translate-y-0' : '-translate-y-full opacity-0'
+              className={`photobooth-strip printing-sound ${
+                isPrinting ? '' : 'opacity-0 translate-y-[-100%]'
               }`}
-              style={{
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)',
-                transform: isPrinting ? 'translateY(0)' : 'translateY(-100%)',
-                opacity: isPrinting ? '1' : '0',
-                transition: 'transform 2s ease-out, opacity 0.5s ease-in'
-              }}
             >
               <img 
                 src={stripGenerated} 
