@@ -1,8 +1,8 @@
-
 import React, { useRef, useState, useEffect } from "react";
+import { Camera } from "lucide-react";
 import { usePhotoBooth } from "../../context/PhotoBoothContext";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, ArrowLeft, RefreshCw } from "lucide-react";
+import { Upload, ArrowLeft, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { resizeImage } from "../../utils/imageUtils";
 
@@ -28,7 +28,6 @@ const CameraComponent: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Initialize camera
   useEffect(() => {
     if (isCapturing) {
       startCamera();
@@ -108,7 +107,6 @@ const CameraComponent: React.FC = () => {
         setIsCapturing(false);
       }
       
-      // Reset flash after a short delay
       setTimeout(() => {
         setIsFlashing(false);
       }, 500);
@@ -143,20 +141,16 @@ const CameraComponent: React.FC = () => {
   const confirmPhoto = () => {
     if (previewImage) {
       if (currentPhotoIndex < photos.length) {
-        // Update existing photo
         updatePhoto(currentPhotoIndex, previewImage);
       } else {
-        // Add new photo
         addPhoto(previewImage);
       }
 
-      // Move to next photo or finish
       if (currentPhotoIndex < photoCount - 1) {
         setCurrentPhotoIndex(currentPhotoIndex + 1);
         setIsCapturing(true);
         setPreviewImage(null);
       } else {
-        // All photos captured, move to generate stage
         setStage("generate");
       }
     }
@@ -188,7 +182,7 @@ const CameraComponent: React.FC = () => {
             Photo {currentPhotoIndex + 1} of {photoCount}
           </h2>
         </div>
-        <div className="w-10"></div> {/* Spacer for balance */}
+        <div className="w-10"></div>
       </div>
 
       <div className="camera-container">
@@ -234,7 +228,13 @@ const CameraComponent: React.FC = () => {
                 onClick={capturePhoto}
                 disabled={countdown !== null}
               >
-                <div className="shutter-button"></div>
+                <div className="shutter-button">
+                  <Camera 
+                    size={24} 
+                    className="text-photobooth-primary" 
+                    strokeWidth={2} 
+                  />
+                </div>
               </Button>
             )}
             

@@ -138,7 +138,7 @@
   }
 
   .shutter-button {
-    @apply rounded-full w-10 h-10 bg-photobooth-accent;
+    @apply flex items-center justify-center;
   }
 
   .photobooth-strip {
