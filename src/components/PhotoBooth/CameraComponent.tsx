@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Camera } from "lucide-react";
 import { usePhotoBooth } from "../../context/PhotoBoothContext";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, ArrowLeft, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { resizeImage } from "../../utils/imageUtils";
+import { useIsMobile } from "../../hooks/use-mobile";
 
 const CameraComponent: React.FC = () => {
   const { 
@@ -27,6 +29,7 @@ const CameraComponent: React.FC = () => {
   const photoRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isCapturing) {
@@ -99,7 +102,19 @@ const CameraComponent: React.FC = () => {
       if (context) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+        
+        // If on mobile, flip the image horizontally before capturing to correct the mirrored view
+        if (isMobile) {
+          context.translate(canvas.width, 0);
+          context.scale(-1, 1);
+        }
+        
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Reset the transformation matrix if we modified it
+        if (isMobile) {
+          context.setTransform(1, 0, 0, 1, 0, 0);
+        }
         
         const dataUrl = canvas.toDataURL("image/jpeg");
         const resizedImage = await resizeImage(dataUrl);
@@ -193,7 +208,7 @@ const CameraComponent: React.FC = () => {
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover ${isMobile ? "camera-mirror" : ""}`}
             />
             
             {countdown !== null && (
