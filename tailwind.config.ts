@@ -53,11 +53,11 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
         photobooth: {
-          primary: '#8B5CF6',
-          secondary: '#D6BCFA',
-          accent: '#F97316',
-          background: '#F1F0FB',
-          dark: '#1A1F2C',
+          primary: '#000000',
+          secondary: '#333333',
+          accent: '#666666',
+          background: '#FFFFFF',
+          dark: '#000000',
           light: '#FFFFFF',
         },
 				sidebar: {
